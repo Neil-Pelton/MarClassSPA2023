@@ -1,13 +1,27 @@
 // 'Import' the Express module instead of http
 const express = require("express");
+const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+const pizzas = require("./routers/pizzas");
+
 // Initialize the Express application
 const app = express(); //best practice to make application "app"
-const dotenv = require("dotenv");
 
 dotenv.config();
 
 const PORT = process.env.PORT || 4040; // we use || to provide a default value
 
+mongoose.connect(process.env.MONGODB);
+
+const db = mongoose.connection;
+
+db.on("error", console.error.bind(console, "Connection Error:"));
+db.once(
+  "open",
+  console.log.bind(console, "Successfully opened connection to Mongo!")
+);
+
+//mongodb+srv://NeilPelton:Budn1k123@cluster0.7iokk8v.mongodb.net/?retryWrites=true&w=majority
 
 //logging middleware
 const logging = (request, response, next) => {
@@ -69,6 +83,9 @@ app.post("/add", (request, response) => {
   };
   response.json(responseBody);
 });
+
+
+app.use("/pizzas", pizzas); //tells express to use pizza routers file anytime the /pizzas route is hit. Hands off request to pizzas router file to be processed
 
 
 // Tell the Express app to start listening
