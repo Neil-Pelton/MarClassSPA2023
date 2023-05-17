@@ -1,15 +1,27 @@
 // 'Import' the Express module instead of http
 const express = require("express");
-// Initialize the Express application
-const app = express(); //best practice to make application "app"
 const dotenv = require("dotenv");
+const mongoose = require("mongoose");
+const pizzas = require("./routers/pizzas");
+// Initialize the Express application
+const app = express();
 
 dotenv.config();
 
 const PORT = process.env.PORT || 4040; // we use || to provide a default value
 
+mongoose.connect(process.env.MONGODB);
 
-//logging middleware
+const db = mongoose.connection;
+
+db.on("error", console.error.bind(console, "Connection Error:"));
+db.once(
+  "open",
+  console.log.bind(console, "Successfully opened connection to Mongo!")
+);
+
+// mongodb+srv://josefhutton:kdh090613@cluster0.phviz0h.mongodb.net/?retryWrites=true&w=majority
+
 const logging = (request, response, next) => {
   console.log(`${request.method} ${request.url} ${Date.now()}`);
   next();
@@ -32,17 +44,15 @@ const cors = (req, res, next) => {
 
 app.use(cors);
 app.use(express.json());
-app.use(logging); //registers with application? ORDER MATTERS
-
+app.use(logging);
 
 // Handle the request with HTTP GET method from http://localhost:4040/status
-app.get("/status", (request, response) => { //creat route for app with app.get --> automatically handles git request, path is /status
-   // Create the headers for response by default 200
-   // Create the response body
-   // End and return the response
+app.get("/status", (request, response) => {
+  // Create the headers for response by default 200
+  // Create the response body
+  // End and return the response
   response.send(JSON.stringify({ message: "Service healthy" }));
 });
-
 
 app.get("/weather/:city", (request, response) => {
   // Express adds a "params" Object to requests that has an matches parameter created using the colon syntax
@@ -56,20 +66,20 @@ app.get("/weather/:city", (request, response) => {
   // handle GET request for weather with an route parameter of "city"
   response.status(418).json({
     current: `The weather in ${city} is ${temp} degrees today.`,
-    apikey: apiKey
+    apikey: apiKey,
   });
 });
-
 
 app.post("/add", (request, response) => {
   const num1 = request.body.numberOne;
   const num2 = request.body.numberTwo;
   const responseBody = {
-     sum: num1 + num2
+    sum: num1 + num2,
   };
   response.json(responseBody);
 });
 
+app.use("/pizzas", pizzas);
 
 // Tell the Express app to start listening
 // Let the humans know I am running and listening on 4040
