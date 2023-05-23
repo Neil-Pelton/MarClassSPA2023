@@ -20,8 +20,6 @@ db.once(
   console.log.bind(console, "Successfully opened connection to Mongo!")
 );
 
-// mongodb+srv://josefhutton:kdh090613@cluster0.phviz0h.mongodb.net/?retryWrites=true&w=majority
-
 const logging = (request, response, next) => {
   console.log(`${request.method} ${request.url} ${Date.now()}`);
   next();
